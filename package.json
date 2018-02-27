@@ -1,14 +1,11 @@
 {
-  "name": "wap-pay",
+  "name": "zero-blog",
   "version": "1.0.0-VIPSHOP",
-  "static": "//h5-jz.vipstatic.com/desktop",
+  "static": "//test-blog.com/desktop",
   "scripts": {
     "start": "npm run webpack",
-    "build": "webpack -p --config webpack.product.config.js ",
     "release": "npm run build && git add . && git commit -m 'release' && git push",
     "dev": "webpack-dev-server  --config webpack.server.config.js  ",
-    "test": "mocha --compilers jsx:babel-core/register --require ./test/test_helper.jsx --recursive ./test",
-    "test:watch": "npm run test -- --watch"
   },
   "devDependencies": {
     "animate.css": "^3.4.0",
