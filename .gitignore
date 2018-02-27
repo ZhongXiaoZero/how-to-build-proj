@@ -1,7 +1,13 @@
+*.lock
 .DS_Store
-.idea/
 *.lock
 *.log
-node_modules
+*.zip
+*.rar
+*.diff
+*/dist/**
+*/deploy/**
+proxy.json
+mock.json
 build
-dist
+node_modules

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="telephone=no" name="format-detection">
+  <title>Document</title>
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+  <style>
+    body {
+      padding: 0 20px
+    }
+
+    * {
+      transition: all 0.5s;
+    }
+
+    h4 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      padding: 5px;
+    }
+
+    .host-list {
+      margin-top: 10px;
+    }
+
+    .close {
+      float: none;
+      margin-left: 0px;
+      transform: translateY(-5px)
+    }
+
+    .cLi {
+      margin-bottom: 5px;
+      font-size: 16px;
+      list-style-type: none;
+    }
+
+    .checked {
+      display: inline-block;
+      width: 15px;
+      color: #468847;
+      opacity: 0;
+    }
+
+    .active {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<h4 class="text-success">切换proxy</h4>
+<p class="bg-warning"><strong>当前proxy:</strong><span class='now-host'>未获取</span></p>
+<form class="form-inline ip-form" action='/change/host' method="get">
+  <div class="form-group" class='ip-form'>
+    <label for="name">Name</label>
+    <input type="text" name="name" class="form-control" id="name" placeholder="测试">
+  </div>
+  <div class="form-group">
+    <label for="host">host</label>
+    <input type="text" name="host" required class="form-control" id="host" placeholder="localhost">
+  </div>
+  <div class="form-group">
+    <label for="port">port</label>
+    <input value="80" name="port" required type="number" class="form-control" id="port" placeholder="80">
+  </div>
+  <button type="buttom" class="btn btn-default">新建并切换</button>
+  <ul class='host-list'>
+
+  </ul>
+  <h4 class="text-success">页面</h4>
+</form>
+<ul>
+  {% for (var link in o.htmlWebpackPlugin.options.links) { %}
+  <li>
+    <a href="{%= o.htmlWebpackPlugin.options.links[link].name %}?debug=vipshop">
+      {%= o.htmlWebpackPlugin.options.links[link].name %}
+    </a>
+  </li>
+  {% } %}
+</ul>
+<script>
+
+
+  localStorage.debug=12222
+
+  var oName = $('#name');
+  var oHost = $('#host');
+  var oPort = $('#port');
+
+  function getList() {
+    var list = localStorage.getItem('hostList') ? localStorage.getItem('hostList') : '[]';
+    return JSON.parse(list);
+  }
+
+  function showHostList() {
+    var list = getList().reverse();
+    var index = localStorage.getItem('active');
+    var html = list.map(function (ip, i) {
+      var stutas = i == index ? 'active' : '';
+      return '<li class="cLi"> <span class="checked ' + stutas + '">✔</span><a data-index=' + i + ' class="changeHost" href="#" data-ip=' + JSON.stringify(ip) + ' >' + ip.host + ':' + ip.port + '(' + ip.name + ')</a><button data-index=' + i + ' type="button" class="close"><span>&times;</span></button></li>'
+    }).join('');
+    $('.host-list').html(html);
+  }
+
+  function setList() {
+    var hostList = getList();
+    var oIp = {
+      name: oName[0].value ? oName[0].value : '',
+      host: oHost[0].value,
+      port: oPort[0].value
+    }
+    hostList.push(oIp);
+    var hostString = JSON.stringify(hostList);
+    localStorage.setItem('hostList', hostString);
+  }
+
+  function setNowHost(obj) {
+    $('.now-host').html(obj.host + ':' + obj.port + '(' + obj.name + ')');
+  }
+
+  function changeHost(data, index) {
+    $.ajax({
+      data: data,
+      url: '/change/host',
+      success: function (mes) {
+        setNowHost(mes);
+        console.log(mes);
+      }
+    });
+  }
+
+  $.get('/get/host').success(function (mes) {
+    console.log(mes)
+    setNowHost(mes);
+  });
+
+  $(document).on('click', '.changeHost', function () {
+    var data = $(this).data('ip');
+    var index = $(this).data('index');
+    localStorage.setItem('active', index);
+    $('.checked').removeClass('active').eq(index).addClass('active');
+    changeHost(data);
+  })
+
+  $('.ip-form').submit(function () {
+    setList()
+    localStorage.setItem('active', 0);
+    showHostList();
+    var data = $('.ip-form').serialize();
+    changeHost(data);
+    return false;
+  });
+  $(document).on('click', '.close', function () {
+    var index = $(this).data('index');
+    var list = getList();
+    var active = localStorage.getItem('active');
+    if (index < active) {
+      localStorage.setItem('active', active - 1)
+    }
+    if (index == active) localStorage.removeItem('active');
+    list.splice(list.length - index - 1, 1);
+    var hostString = JSON.stringify(list);
+    localStorage.setItem('hostList', hostString);
+    showHostList();
+  });
+  showHostList();
+</script>
+</body>
+</html>
